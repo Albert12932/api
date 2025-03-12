@@ -3,10 +3,11 @@ package main
 import (
 	"context"
 	"github.com/gin-gonic/gin"
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 	"log"
 	"net/http"
-	"os"
+	"strconv"
+	"time"
 )
 
 type User struct {
@@ -17,37 +18,42 @@ type User struct {
 
 func main() {
 
-	conn, err := pgx.Connect(context.Background(), "postgres://postgres:1234@localhost:5432/postgres")
+	pool, err := pgxpool.New(context.Background(), "postgres://postgres:1234@localhost:5432/postgres")
 	if err != nil {
 		panic(err)
 	}
-	defer conn.Close(context.Background())
-
-	var name string
-	var mail string
-
-	err = conn.QueryRow(context.Background(), "Select name, mail from users where id = 2").Scan(&name, &mail)
-	if err != nil {
-		log.Println(err, "Query failed")
-		os.Exit(1)
-	}
+	defer pool.Close()
 
 	r := gin.Default()
-	r.SetTrustedProxies(nil)
-	r.GET("/users/:id", getUserHandler(conn))
-	r.POST("/users/create", createUserHandler(conn))
-	r.DELETE("/users/delete/:id", deleteUserHandler(conn))
-	r.PATCH("/users/update", patchUserHandler(conn))
-	r.Run()
+	err = r.SetTrustedProxies(nil)
+	if err != nil {
+		return
+	}
+	r.GET("/users/:id", getUserHandler(pool))
+	r.POST("/users", createUserHandler(pool))
+	r.DELETE("/users/delete/:id", deleteUserHandler(pool))
+	r.PATCH("/users", patchUserHandler(pool))
+	if err := r.Run(); err != nil {
+		log.Println("Error while running")
+		panic(err)
+	}
 
 }
 
-func getUserHandler(conn *pgx.Conn) gin.HandlerFunc {
+func getUserHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var user User
 
-		id := c.Param("id")
-		err := conn.QueryRow(context.Background(), "SELECT * from users where id = $1", id).Scan(&user.Id, &user.Name, &user.Mail)
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный ID"})
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
+
+		err = pool.QueryRow(ctx, "SELECT id, name, mail from users where id = $1", id).Scan(&user.Id, &user.Name, &user.Mail)
 		if err != nil {
 			if err.Error() == "no rows in result set" {
 				c.JSON(http.StatusNotFound, gin.H{
@@ -69,7 +75,7 @@ func getUserHandler(conn *pgx.Conn) gin.HandlerFunc {
 	}
 }
 
-func createUserHandler(conn *pgx.Conn) gin.HandlerFunc {
+func createUserHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var newUser User
 
@@ -83,7 +89,10 @@ func createUserHandler(conn *pgx.Conn) gin.HandlerFunc {
 
 		var UserID int
 
-		err := conn.QueryRow(context.Background(), "INSERT INTO users (name, mail) values ($1, $2) RETURNING id", newUser.Name, newUser.Mail).Scan(&UserID)
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
+
+		err := pool.QueryRow(ctx, "INSERT INTO users (name, mail) values ($1, $2) RETURNING id", newUser.Name, newUser.Mail).Scan(&UserID)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error":   "Ошибка при добавлении пользователя",
@@ -102,10 +111,19 @@ func createUserHandler(conn *pgx.Conn) gin.HandlerFunc {
 	}
 }
 
-func deleteUserHandler(conn *pgx.Conn) gin.HandlerFunc {
+func deleteUserHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		id := c.Param("id")
-		cmdTag, err := conn.Exec(context.Background(), "DELETE from users where id = $1", id)
+
+		id, err := strconv.Atoi(c.Param("id"))
+		if err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Некорректный ID"})
+			return
+		}
+
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
+
+		cmdTag, err := pool.Exec(ctx, "DELETE from users where id = $1", id)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": "Ошибка удаления пользователя",
@@ -126,7 +144,7 @@ func deleteUserHandler(conn *pgx.Conn) gin.HandlerFunc {
 	}
 }
 
-func patchUserHandler(conn *pgx.Conn) gin.HandlerFunc {
+func patchUserHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var newUserInfo User
 
@@ -134,9 +152,13 @@ func patchUserHandler(conn *pgx.Conn) gin.HandlerFunc {
 			c.JSON(http.StatusBadRequest, gin.H{
 				"error": "Неверные данные",
 			})
+			return
 		}
 
-		cmdTag, err := conn.Exec(context.Background(), "UPDATE users SET name=$1, mail=$2 where id=$3", newUserInfo.Name, newUserInfo.Mail, newUserInfo.Id)
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
+
+		cmdTag, err := pool.Exec(ctx, "UPDATE users SET name=$1, mail=$2 where id=$3", newUserInfo.Name, newUserInfo.Mail, newUserInfo.Id)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": "Ошибка обновления пользователя",
