@@ -76,7 +76,7 @@ func CreateTaskHandler(pool *pgxpool.Pool, logger *kafka.KafkaLoggerProducer) gi
 
 		defer cancel()
 
-		_, err := pool.Exec(ctx, "Insert into tasks (userId, header, text, done) values ($1, $2, $3, $4)", newTask.UserID, newTask.Header, newTask.Text, newTask.Done)
+		err := pool.QueryRow(ctx, "Insert into tasks (userId, header, text, done) values ($1, $2, $3, $4) RETURNING id", newTask.UserID, newTask.Header, newTask.Text, newTask.Done).Scan(&newTask.Id)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error":   "Error while creating task",
