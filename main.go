@@ -15,6 +15,8 @@ func main() {
 	}
 	defer db.Close()
 
+	//go kafk.StartConsumer()
+
 	r := gin.Default()
 
 	routes.RegisterTaskRoutes(r, db)

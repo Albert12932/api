@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	//"bdstudy/kafk"
 	"bdstudy/models"
 	"context"
 	"github.com/gin-gonic/gin"
@@ -79,6 +80,11 @@ func CreateTaskHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 			})
 			return
 		}
+
+		//err = kafk.SendMessage("tasks", "Task created with ID:"+strconv.Itoa(newTask.Id))
+		//if err != nil {
+		//	log.Println("Error while sending message with kafk")
+		//}
 
 		c.JSON(http.StatusOK, gin.H{
 			"message": "Task successfully created",
