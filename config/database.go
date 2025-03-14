@@ -2,6 +2,7 @@ package config
 
 import (
 	"context"
+	"fmt"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 	"log"
@@ -17,5 +18,7 @@ func ConnectDB() (*pgxpool.Pool, error) {
 
 	dbConnect := os.Getenv("DATABASE_CONNECT")
 
-	return pgxpool.New(context.Background(), dbConnect)
+	sslCertPath := "certs/server.crt"
+
+	return pgxpool.New(context.Background(), fmt.Sprintf(dbConnect, sslCertPath))
 }

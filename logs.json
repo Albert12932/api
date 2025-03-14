@@ -14,3 +14,11 @@
 {"timestamp":"2025-03-13T20:59:19+03:00","user_id":2,"action":"Get tasks","details":"No details provided"}
 {"timestamp":"2025-03-13T21:01:14+03:00","user_id":2,"action":"Get tasks","details":"No details provided"}
 {"timestamp":"2025-03-13T21:01:18+03:00","user_id":2,"action":"Get tasks","details":"No details provided"}
+{"timestamp":"2025-03-14T13:00:28+03:00","user_id":1,"action":"Created task","details":"UserId:1, Header:Albert1_task_header1"}
+{"timestamp":"2025-03-14T13:00:36+03:00","user_id":2,"action":"Created task","details":"UserId:1, Header:Albert1_task_header2"}
+{"timestamp":"2025-03-14T13:00:42+03:00","user_id":3,"action":"Created task","details":"UserId:1, Header:Albert1_task_header3"}
+{"timestamp":"2025-03-14T13:00:52+03:00","user_id":4,"action":"Created task","details":"UserId:2, Header:Albert2_task_header1"}
+{"timestamp":"2025-03-14T13:01:00+03:00","user_id":5,"action":"Created task","details":"UserId:2, Header:Albert2_task_header2"}
+{"timestamp":"2025-03-14T13:01:12+03:00","user_id":6,"action":"Created task","details":"UserId:3, Header:Albert3_task_header1"}
+{"timestamp":"2025-03-14T13:01:19+03:00","user_id":7,"action":"Created task","details":"UserId:3, Header:Albert3_task_header2"}
+{"timestamp":"2025-03-14T13:01:23+03:00","user_id":1,"action":"Get tasks","details":"No details provided"}
