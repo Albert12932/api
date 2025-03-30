@@ -1,10 +1,6 @@
 package controllers
 
 import (
-	"bdstudy/kafka"
-	"fmt"
-
-	//"bdstudy/kafka"
 	"bdstudy/models"
 	"context"
 	"github.com/gin-gonic/gin"
@@ -14,7 +10,7 @@ import (
 	"time"
 )
 
-func GetTasksHandler(pool *pgxpool.Pool, logger *kafka.KafkaLoggerProducer) gin.HandlerFunc {
+func GetTasksHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
@@ -55,12 +51,11 @@ func GetTasksHandler(pool *pgxpool.Pool, logger *kafka.KafkaLoggerProducer) gin.
 			return
 		}
 		c.JSON(http.StatusOK, tasks)
-		logger.LogEvent(tasks[0].UserID, "Get tasks", "")
 	}
 
 }
 
-func CreateTaskHandler(pool *pgxpool.Pool, logger *kafka.KafkaLoggerProducer) gin.HandlerFunc {
+func CreateTaskHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var newTask models.Task
 
@@ -89,12 +84,11 @@ func CreateTaskHandler(pool *pgxpool.Pool, logger *kafka.KafkaLoggerProducer) gi
 			"message": "Task successfully created",
 			"taskId":  newTask.Id,
 		})
-		logger.LogEvent(newTask.Id, "Created task", fmt.Sprintf("UserId:%d, Header:%s", newTask.UserID, newTask.Header))
 
 	}
 }
 
-func DeleteTaskHandler(pool *pgxpool.Pool, logger *kafka.KafkaLoggerProducer) gin.HandlerFunc {
+func DeleteTaskHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		id, err := strconv.Atoi(c.Param("id"))
@@ -123,12 +117,11 @@ func DeleteTaskHandler(pool *pgxpool.Pool, logger *kafka.KafkaLoggerProducer) gi
 			"message": "Task successfully deleted",
 			"id":      id,
 		})
-		logger.LogEvent(id, "Task deleted", "")
 
 	}
 }
 
-func PatchTaskHandler(pool *pgxpool.Pool, logger *kafka.KafkaLoggerProducer) gin.HandlerFunc {
+func PatchTaskHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var newTaskInfo models.Task
 
@@ -163,11 +156,10 @@ func PatchTaskHandler(pool *pgxpool.Pool, logger *kafka.KafkaLoggerProducer) gin
 			"text":    newTaskInfo.Text,
 			"done":    newTaskInfo.Done,
 		})
-		logger.LogEvent(newTaskInfo.Id, "Updated task", fmt.Sprintf("UserId:%d", newTaskInfo.UserID))
 	}
 }
 
-func SwitchTaskHandler(pool *pgxpool.Pool, logger *kafka.KafkaLoggerProducer) gin.HandlerFunc {
+func SwitchTaskHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		id, err := strconv.Atoi(c.Param("id"))
 		if err != nil {
@@ -201,6 +193,5 @@ func SwitchTaskHandler(pool *pgxpool.Pool, logger *kafka.KafkaLoggerProducer) gi
 			"state":   newState,
 		})
 
-		logger.LogEvent(id, "Task switched", "")
 	}
 }
