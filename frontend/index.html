@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>TODO List</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div class="container">
+    <h1>TODO List</h1>
+
+    <h2>Вход / Регистрация</h2>
+    <input type="text" id="username" placeholder="Username">
+    <input type="password" id="password" placeholder="Password">
+    <div class="button-group">
+        <button id="loginButton">Войти</button>
+        <button id="registerButton">Зарегистрироваться</button>
+    </div>
+</div>
+
+<div class="container">
+    <h2>Создать задачу</h2>
+    <input type="text" id="newTaskHeader" placeholder="Заголовок задачи">
+    <textarea id="newTaskText" placeholder="Текст задачи"></textarea>
+    <button id="addTaskButton">Добавить задачу</button>
+</div>
+
+<div class="container">
+    <h2>Список задач</h2>
+    <ul id="taskList"></ul>
+    <div class="button-group">
+        <button id="refreshButton">Обновить список</button>
+        <button id="logoutButton">Выйти</button>
+    </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,4 +1,33 @@
 .env
 /vendor/
 vendor
-certs/server.crt
+backend/certs/server.crt
+# Go
+/backend/main
+/backend/main.exe
+/backend/main.out
+
+# Go build artifacts
+/backend/*.exe
+/backend/*.out
+
+# Go modules cache (опционально)
+/backend/vendor
+
+# Postgres data (volume)
+/pgdata/
+/data/
+
+# Certs (!!! если у тебя server.crt приватный — лучше не пушить в гит)
+certs/*
+
+# IDE files
+.idea/
+.vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

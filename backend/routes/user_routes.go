@@ -1,7 +1,7 @@
 package routes
 
 import (
-	"bdstudy/controllers"
+	"bdstudy/backend/controllers"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 )

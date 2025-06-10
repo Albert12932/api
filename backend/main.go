@@ -1,8 +1,8 @@
 package main
 
 import (
-	"bdstudy/config"
-	"bdstudy/routes"
+	"bdstudy/backend/config"
+	routes2 "bdstudy/backend/routes"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -31,8 +31,8 @@ func main() {
 		MaxAge:           12 * time.Hour,
 	}))
 
-	routes.RegisterUserRoutes(r, db)
-	routes.RegisterTaskRoutes(r, db)
+	routes2.RegisterUserRoutes(r, db)
+	routes2.RegisterTaskRoutes(r, db)
 	go func() {
 		log.Println("🚀 Сервер запущен на порту 8080")
 		if err := r.Run(":8080"); err != nil {

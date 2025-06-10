@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	"bdstudy/models"
+	"bdstudy/backend/models"
 	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
