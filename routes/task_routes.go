@@ -2,7 +2,6 @@ package routes
 
 import (
 	"bdstudy/controllers"
-	"bdstudy/kafka"
 	"github.com/gin-gonic/gin"
 	"github.com/jackc/pgx/v5/pgxpool"
 )

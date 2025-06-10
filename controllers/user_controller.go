@@ -44,40 +44,40 @@ func GetUserHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	}
 }
 
-func CreateUserHandler(pool *pgxpool.Pool) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		var newUser models.User
-
-		if err := c.ShouldBindJSON(&newUser); err != nil {
-			c.JSON(http.StatusBadRequest, gin.H{
-				"message": "Invalid data",
-				"err":     err,
-			})
-			return
-		}
-
-		var UserID int
-
-		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
-		defer cancel()
-
-		err := pool.QueryRow(ctx, "INSERT INTO users (name) values ($1) RETURNING id", newUser.Name).Scan(&UserID)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{
-				"error":   "Error while creating user",
-				"message": err,
-			})
-			return
-		}
-
-		c.JSON(http.StatusCreated, gin.H{
-			"message": "User successfully created",
-			"id":      UserID,
-			"name":    newUser.Name,
-		})
-
-	}
-}
+//func CreateUserHandler(pool *pgxpool.Pool) gin.HandlerFunc {
+//	return func(c *gin.Context) {
+//		var newUser models.User
+//
+//		if err := c.ShouldBindJSON(&newUser); err != nil {
+//			c.JSON(http.StatusBadRequest, gin.H{
+//				"message": "Invalid data",
+//				"err":     err,
+//			})
+//			return
+//		}
+//
+//		var UserID int
+//
+//		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+//		defer cancel()
+//
+//		err := pool.QueryRow(ctx, "INSERT INTO users (name) values ($1) RETURNING id", newUser.Name).Scan(&UserID)
+//		if err != nil {
+//			c.JSON(http.StatusInternalServerError, gin.H{
+//				"error":   "Error while creating user",
+//				"message": err.Error(),
+//			})
+//			return
+//		}
+//
+//		c.JSON(http.StatusCreated, gin.H{
+//			"message": "User successfully created",
+//			"id":      UserID,
+//			"name":    newUser.Name,
+//		})
+//
+//	}
+//}
 
 func DeleteUserHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 	return func(c *gin.Context) {
@@ -144,5 +144,78 @@ func PatchUserHandler(pool *pgxpool.Pool) gin.HandlerFunc {
 			"id":      newUserInfo.Id,
 			"name":    newUserInfo.Name,
 		})
+	}
+}
+
+func RegisterUserHandler(pool *pgxpool.Pool) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var newUser models.User
+
+		if err := c.ShouldBindJSON(&newUser); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"message": "Invalid data",
+				"err":     err,
+			})
+			return
+		}
+
+		var UserID int
+
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
+
+		err := pool.QueryRow(ctx, "INSERT INTO users (name, password) values ($1, $2) RETURNING Id", newUser.Name, newUser.Password).Scan(&UserID)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error":   "Error while creating user",
+				"message": err.Error(),
+			})
+			return
+		}
+
+		c.JSON(http.StatusCreated, gin.H{
+			"message": "User successfully created",
+			"id":      UserID,
+			"name":    newUser.Name,
+		})
+
+	}
+}
+
+func GetLoginHandler(pool *pgxpool.Pool) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		var user models.User
+
+		username := c.Query("username")
+		password := c.Query("password")
+
+		ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+		defer cancel()
+
+		err := pool.QueryRow(ctx, "SELECT id, password FROM users WHERE name = $1", username).Scan(&user.Id, &user.Password)
+		if err != nil {
+			if err.Error() == "no rows in result set" {
+				c.JSON(http.StatusNotFound, gin.H{
+					"error": "User is not found",
+				})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": "Error while getUser query",
+			})
+			return
+		}
+
+		if password == user.Password {
+			c.JSON(http.StatusOK, gin.H{
+				"user_id": user.Id,
+			})
+			return
+		} else {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": "Wrong password",
+			})
+			return
+		}
 	}
 }

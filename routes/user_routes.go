@@ -8,7 +8,9 @@ import (
 
 func RegisterUserRoutes(r *gin.Engine, db *pgxpool.Pool) {
 	r.GET("/users/:id", controllers.GetUserHandler(db))
-	r.POST("/users", controllers.CreateUserHandler(db))
+	//r.POST("/users", controllers.CreateUserHandler(db))
 	r.DELETE("/users/delete/:id", controllers.DeleteUserHandler(db))
 	r.PATCH("/users", controllers.PatchUserHandler(db))
+	r.POST("/register", controllers.RegisterUserHandler(db))
+	r.GET("/login", controllers.GetLoginHandler(db))
 }
